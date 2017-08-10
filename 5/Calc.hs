@@ -1,7 +1,10 @@
+{-# LANGUAGE FlexibleInstances #-}
+
 module Calc where
 
 import ExprT
 import Parser
+import qualified Data.Map as M
 
 eval :: ExprT -> Integer
 eval (Lit n) = n
@@ -55,4 +58,23 @@ testBool = testExp :: Maybe Bool
 testMM = testExp :: Maybe MinMax
 testSat = testExp :: Maybe Mod7
 
---e5
+--e6
+class HasVars a where
+  var :: String -> a
+
+data VarExprT = VarLit Integer
+           | VarAdd VarExprT VarExprT
+           | VarMul VarExprT VarExprT
+           | VarVar String
+  deriving (Show, Eq)
+
+instance Expr VarExprT where
+  lit x = VarLit x
+  add x y = VarAdd x y
+  mul x y = VarMul x y
+
+instance HasVars VarExprT where
+  var x = VarVar x
+
+instance HasVars (M.Map String Integer -> Maybe Integer) where
+  var x = \m -> M.lookup x m
