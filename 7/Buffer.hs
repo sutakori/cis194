@@ -1,3 +1,4 @@
+
 module Buffer where
 
 -- Type class for data structures that can represent the text buffer

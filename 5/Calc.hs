@@ -78,3 +78,22 @@ instance HasVars VarExprT where
 
 instance HasVars (M.Map String Integer -> Maybe Integer) where
   var x = \m -> M.lookup x m
+
+instance Expr (M.Map String Integer -> Maybe Integer) where
+  lit x = \m -> Just x
+  add x y = \m -> add (x m) (y m)
+  mul x y = \m -> mul (x m) (y m)
+
+instance Expr (Maybe Integer) where
+  lit x = Just x
+  add Nothing _ = Nothing
+  add _ Nothing = Nothing
+  add x@(Just nx) y@(Just ny) = Just (nx+ny)
+  mul Nothing _ = Nothing
+  mul _ Nothing = Nothing
+  mul x@(Just nx) y@(Just ny) = Just (nx*ny)
+
+withVars :: [(String, Integer)]
+         -> (M.Map String Integer -> Maybe Integer)
+         -> Maybe Integer
+withVars vs exp = exp $ M.fromList vs
