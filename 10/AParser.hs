@@ -68,5 +68,30 @@ first f a = ((f . fst) a, snd a)
 --e2
 instance Applicative Parser where
   pure a = Parser f
-    where f _ = Just (a,[])
-  Nothing <*> _ = 
+    where f = \s -> Just(a,s)
+  p1@(Parser f1) <*> p2@(Parser f2) = Parser g
+    where g s = case (f1 s) of
+            Nothing ->  Nothing
+            (Just (f,s1)) -> case (f2 s1) of
+                               Nothing -> Nothing
+                               Just (v,s2) -> Just (f v, s2)
+
+--e3
+abParser :: Parser (Char, Char)
+abParser = (\x y -> (x,y)) <$> char 'a' <*> char 'b'
+abParser_ :: Parser ()
+abParser_ = (\x y -> ()) <$> char 'a' <*> char 'b'
+intParser :: Parser [Integer]
+intParser = (\x _ y -> [x,y]) <$> posInt <*> char ' ' <*> posInt
+
+--e4
+instance Alternative Parser where
+  empty = Parser (\s -> Nothing)
+  p1@(Parser f1) <|> p2@(Parser f2) = Parser g
+    where g s = case (f1 s) of
+            Nothing -> f2 s
+            _ -> f1 s
+
+--e5
+intOrUppercase :: Parser ()
+intOrUppercase = (\x -> ()) <$> (( (\_->()) <$> posInt) <|> ( (\_->()) <$> (satisfy isUpper) ))
